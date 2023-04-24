@@ -16,8 +16,8 @@ for i in range(8):
         board[i].append(0)
 
 # quick speed for faster debugging
-#speed(0)
-tracer(0, 0)
+speed(0) # 0 = fastest, 1 = slowest - adjust before submission!
+tracer(0, 0) # instant drawing (no animation), very useful for debugging
 
 # position to top left corner
 penup()
@@ -28,9 +28,8 @@ forward(200)
 left(180)
 pendown()
 
+
 # function to create a square
-
-
 def create_square(endfill=0):
     global c
     if endfill == 1:
@@ -56,16 +55,16 @@ def create_square(endfill=0):
     forward(60)
     end_fill()
 
-# create circle from top right corner of square
 
-
+# function to create a circle from top right corner of square
 def create_circle(colour):
     if colour == "white":
         fillcolor("#e9ce9b")
         pencolor("#d2b26d")
     else:
-        fillcolor("#000000")
-        pencolor("#8c510a")
+        fillcolor("#300c09")
+        pencolor("#1b100b")
+    pensize(3)
     forward(5)
     right(90)
     forward(30)
@@ -116,7 +115,6 @@ forward(120)
 right(90)
 forward(120)
 right(90)
-# create_circle("white")
 
 # use board array to put pieces in correct positions
 for y in range(8):

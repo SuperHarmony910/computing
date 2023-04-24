@@ -1,0 +1,18 @@
+Objective: created a chequered board to play checkers on.
+
+-	A function was made to facilitate the creation of squares.
+
+-	A global variable, `c`, was created for the colour alteration between the squares uniform with the
+	aforementioned function.
+	
+-	A while loop was used to create the checker board. 
+		For aesthetic pleasure, the checker board animation will be spiralling into the top left corner instead
+		of a more conventional vertical/horizontal setup
+		
+-	Another while loop was employed to create the checker pieces on the board, using a self-devised principle
+	whereby when the rows and columns of the board are sorted from 0 to 7, the sum of the coordinates is
+	always odd - therefore the modulus of the sum will never be 0. This was used to place the checker pieces
+	acordingly.
+		I discovered this principle when I was listing out the pairs of numbers in an x-y relationship,
+		attempting to determine a correlation between every pair of coordinates that contained a checker piece.
+		General ability skills come in handy sometimes :)
