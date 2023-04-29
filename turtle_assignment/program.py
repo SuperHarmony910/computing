@@ -1,7 +1,8 @@
+from enum import Enum
 from turtle import *
 
 # setting
-setup(800, 800)
+setup(600, 600)
 window = Screen()
 window.title("Checkers Assignment")
 window.bgcolor("darkslateblue")
@@ -57,8 +58,8 @@ def create_square(endfill=0):
 
 
 # function to create a circle from top right corner of square
-def create_circle(colour):
-    if colour == "white":
+def create_circle(type):
+    if type == "white":
         fillcolor("#e9ce9b")
         pencolor("#d2b26d")
     else:
@@ -134,17 +135,187 @@ for y in range(8):
             back(60*y)
             left(90)
 
+# draw the coordinate of each square on the board
+# this is for debugging purposes
+for y in range(8):
+    for x in range(8):
+        forward(60*x)
+        right(90)
+        forward(60*y)
+        left(90)
+        stamp()
+        write(str(x) + ", " + str(y), align="left")
+        back(60*x)
+        right(90)
+        back(60*y)
+        left(90)
+
+
+# make this checkers board playable
+# 0 = empty, 1 = white, 2 = black
+# 3 = white king, 4 = black king
+# 5 = white selected, 6 = black selected
+# 7 = white king selected, 8 = black king selected
+# 9 = white move, 10 = black move
+# 11 = white king move, 12 = black king move
+
+# create a class for the pieces
+class Piece:
+    def __init__(self, x, y, colour):
+        self.x = x
+        self.y = y
+        self.colour = colour
+        self.king = False
+        self.selected = False
+
+# create an enum for the pieces
+class PieceType(Enum):
+    EMPTY = 0
+    WHITE = 1
+    BLACK = 2
+    WHITE_KING = 3
+    BLACK_KING = 4
+    WHITE_SELECTED = 5
+    BLACK_SELECTED = 6
+    WHITE_KING_SELECTED = 7
+    BLACK_KING_SELECTED = 8
+    WHITE_MOVE = 9
+    BLACK_MOVE = 10
+    WHITE_KING_MOVE = 11
+    BLACK_KING_MOVE = 12
+
+# move the animated checker piece to the selected square
+def move_piece(x, y, x2, y2):
+    # move the piece to the selected square
+    forward(60*x2)
+    right(90)
+    forward(60*y2)
+    left(90)
+    # draw the piece
+    if board[y2][x2] == PieceType.WHITE:
+        create_circle("white")
+    elif board[y2][x2] == PieceType.BLACK:
+        create_circle("black")
+    elif board[y2][x2] == PieceType.WHITE_KING:
+        create_circle("white")
+    elif board[y2][x2] == PieceType.BLACK_KING:
+        create_circle("black")
+    # return to original pos
+    back(60*x2)
+    right(90)
+    back(60*y2)
+    left(90)
+
+# function to check if a move is valid
+def check_move(x, y, x2, y2):
+    # check if move is diagonal
+    if abs(x - x2) != abs(y - y2):
+        return False
+    # check if move is 1 square
+    if abs(x - x2) != 1:
+        return False
+    # check if move is in bounds
+    if x2 < 0 or x2 > 7 or y2 < 0 or y2 > 7:
+        return False
+    # check if move is empty
+    if board[y2][x2] != 0:
+        return False
+    # check if move is in correct direction
+    if board[y][x] == 1 and y2 > y:
+        return False
+    if board[y][x] == 2 and y2 < y:
+        return False
+    # check if move is a jump
+    if abs(x - x2) == 2:
+        if board[y][x] == 1:
+            if board[y2 + 1][x2 + 1] != 2 and board[y2 + 1][x2 - 1] != 2:
+                return False
+        if board[y][x] == 2:
+            if board[y2 - 1][x2 + 1] != 1 and board[y2 - 1][x2 - 1] != 1:
+                return False
+    return True
+
+
+
+# function to check if a jump is valid
+def check_jump(x, y, x2, y2):
+    # check if jump is diagonal
+    if abs(x - x2) != abs(y - y2):
+        return False
+    # check if jump is 2 squares
+    if abs(x - x2) != 2:
+        return False
+    # check if jump is in bounds
+    if x2 < 0 or x2 > 7 or y2 < 0 or y2 > 7:
+        return False
+    # check if jump is empty
+    if board[y2][x2] != 0:
+        return False
+    # check if jump is in correct direction
+    if board[y][x] == 1 and y2 > y:
+        return False
+    if board[y][x] == 2 and y2 < y:
+        return False
+    # check if jump is over an enemy piece
+    if board[y][x] == 1:
+        if x2 > x and board[y + 1][x + 1] != 2:
+                return False
+        if x2 < x and board[y + 1][x - 1] != 2:
+                return False
+    if board[y][x] == 2:
+        if x2 > x and board[y - 1][x + 1] != 1:
+                return False
+        if x2 < x and board[y - 1][x - 1] != 1:
+                return False
+    return True
+
+# function to check if a piece can jump
+def check_jump_available(x, y):
+    if board[y][x] == 1:
+        if x > 1 and check_jump(x, y, x - 2, y + 2):
+                return True
+        if x < 6 and check_jump(x, y, x + 2, y + 2):
+                return True
+    if board[y][x] == 2:
+        if x > 1 and check_jump(x, y, x - 2, y - 2):
+                return True
+        if x < 6 and check_jump(x, y, x + 2, y - 2):
+                return True
+    return False
+
+# make piece jump
+def jump(x, y, x2, y2):
+    board[y2][x2] = board[y][x]
+    board[y][x] = 0
+    # check if piece becomes king
+    if board[y2][x2] == PieceType.WHITE and y2 == PieceType.WHITE_KING_SELECTED:
+        board[y2][x2] = PieceType.WHITE_KING
+    if board[y2][x2] == PieceType.BLACK and y2 == 0:
+        board[y2][x2] = PieceType.BLACK_KING
+    if abs(x - x2) == 2:
+        # remove enemy piece
+        if board[y2][x2] == 1:
+            if x2 > x:
+                board[y2 - 1][x2 - 1] = PieceType.EMPTY
+            if x2 < x:
+                board[y2 - 1][x2 + 1] = PieceType.EMPTY
+        if board[y2][x2] == 2:
+            if x2 > x:
+                board[y2 + 1][x2 - 1] = PieceType.EMPTY
+            if x2 < x:
+                board[y2 + 1][x2 + 1] = PieceType.EMPTY
+
 input("Press enter to exit...")
 
 
-# 0 [[0, 1, 0, 3, 0, 5, 0, 7],
+#0 [[0, 1, 0, 3, 0, 5, 0, 7],
 #1 [0, 0, 2, 0, 4, 0, 6, 0],
 #2 [0, 0, 0, 0, 0, 0, 0, 0],
 #3 [0, 0, 0, 0, 0, 0, 0, 0],
 #4 [0, 0, 0, 0, 0, 0, 0, 0],
 #5 [0, 0, 0, 0, 0, 0, 0, 0],
 #6 [0, 0, 0, 0, 0, 0, 0, 0],
-# 7 [0, 0, 0, 0, 0, 0, 0, 0]]
+#7 [0, 0, 0, 0, 0, 0, 0, 0]]
 
 
 # 0, 1 true
