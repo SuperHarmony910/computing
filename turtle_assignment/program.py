@@ -15,6 +15,8 @@ c = 0  # colour iterator
 board = []  # board array
 
 # create an enum for the pieces
+
+
 class PieceType(IntEnum):
     EMPTY = 0
     WHITE = 1
@@ -29,6 +31,7 @@ class PieceType(IntEnum):
     BLACK_MOVE = 10
     WHITE_KING_MOVE = 11
     BLACK_KING_MOVE = 12
+
 
 for i in range(8):
     board.append([])
@@ -47,7 +50,6 @@ t.left(90)
 t.forward(200)
 t.left(180)
 t.pendown()
-
 
 
 # function to create a square
@@ -145,10 +147,12 @@ for y in range(8):
             t.forward(60*y)
             t.left(90)
             if y < 3:
-                board[int(round(t.pos()[1]-200)/-60)][int(round(t.pos()[0]+260)/60)] = PieceType.WHITE
+                board[int(round(t.pos()[1]-200)/-60)
+                      ][int(round(t.pos()[0]+260)/60)] = PieceType.WHITE
                 create_piece("white")
             elif y > 4:
-                board[int(round(t.pos()[1]-200)/-60)][int(round(t.pos()[0]+260)/60)] = PieceType.BLACK
+                board[int(round(t.pos()[1]-200)/-60)
+                      ][int(round(t.pos()[0]+260)/60)] = PieceType.BLACK
                 create_piece("black")
 
             # return to original t.pos
@@ -168,7 +172,7 @@ for y in range(8):
         t.forward(30)
         t.color('deepskyblue')
         t.write(str(x) + ", " + str(y), align="center",
-              font=("Arial", 18, "normal"))
+                font=("Arial", 18, "normal"))
         t.color('black')
         t.back(30)
         t.back(60*x)
@@ -186,6 +190,7 @@ for y in range(8):
 
 # create a class for the pieces
 
+
 class Piece:
     def __init__(self, x, y, type):
         self.x = x
@@ -200,39 +205,49 @@ def get_piece(xraw, yraw):
     y = math.floor(round(yraw-200)/-60)
     x = math.floor(round(xraw+260)/60)
     if y > 7 or x > 7 or x < 0 or y < 0:
-        return print('out of bounds')
-    return print(board[y][x])
+        return False  # print('out of bounds')
+    return board[y][x]
+
 
 window.onscreenclick(get_piece)
 
-# select a piece to move
+def available_squares(x, y):
+    available_squares = []
+    if board[y][x] == PieceType.BLACK_KING or board[y][x] == PieceType.WHITE_KING:
+        # make sure coordinate is not out of bounds
+        if x+1 < 8 and y+1 < 8:
+            # check if square is empty
+            if board[y+1][x+1] == PieceType.EMPTY:
+                available_squares.append([x+1, y+1])
+    return available_squares
 
+# select a piece to move
 def select_piece(x, y):
     match board[y][x]:
         # check if the selected piece is a white piece
         case PieceType.WHITE:
-            if board[y][x] == PieceType.WHITE_SELECTED:
-                return PieceType.EMPTY
-            else:
+            if board[y][x] == PieceType.WHITE:
                 return PieceType.WHITE_SELECTED
+            else:
+                return PieceType.WHITE
         # check if the selected piece is a black piece
         case PieceType.BLACK:
-            if board[y][x] == PieceType.BLACK_SELECTED:
-                return PieceType.EMPTY
-            else:
+            if board[y][x] == PieceType.BLACK:
                 return PieceType.BLACK_SELECTED
+            else:
+                return PieceType.BLACK
         # check if the selected piece is a white king
         case PieceType.WHITE_KING:
-            if board[y][x] == PieceType.WHITE_KING_SELECTED:
-                return PieceType.EMPTY
-            else:
+            if board[y][x] == PieceType.WHITE_KING:
                 return PieceType.WHITE_KING_SELECTED
+            else:
+                return PieceType.WHITE_KING
         # check if the selected piece is a black king
         case PieceType.BLACK_KING:
-            if board[y][x] == PieceType.BLACK_KING_SELECTED:
-                return PieceType.EMPTY
-            else:
+            if board[y][x] == PieceType.BLACK_KING:
                 return PieceType.BLACK_KING_SELECTED
+            else:
+                return PieceType.BLACK_KING
         # check if the selected piece is nonexistent
         case _:
             return PieceType.EMPTY
@@ -294,7 +309,7 @@ def check_move(x, y, x2, y2):
         return False
 
     # check if move is a jump
-    if abs(x - x2) % 2 == 0:  # accounts for all jump magnitudes    
+    if abs(x - x2) % 2 == 0:  # accounts for all jump magnitudes
         if board[y][x] == 1:
             if board[y2 + 1][x2 + 1] != 2 and board[y2 + 1][x2 - 1] != 2:
                 return False
@@ -374,6 +389,7 @@ def jump(x, y, x2, y2):
                 board[y2 + 1][x2 - 1] = PieceType.EMPTY
             if x2 < x:
                 board[y2 + 1][x2 + 1] = PieceType.EMPTY
+
 
 t.goto(-200, 200)
 t.stamp()
