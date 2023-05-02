@@ -1,5 +1,8 @@
-from enum import Enum
-from turtle import *
+from enum import IntEnum
+import math
+from turtle import Turtle, Screen, setup, tracer, mainloop
+
+t = Turtle()
 
 # setting
 setup(0.5401041667, 0.80546875, 0.5, 0.5)
@@ -11,27 +14,8 @@ i = 7  # square iterator
 c = 0  # colour iterator
 board = []  # board array
 
-for i in range(8):
-    board.append([])
-    for j in range(8):
-        board[i].append(0)
-
-# quick speed for faster debugging
-speed(0)  # 0 = fastest, 1 = slowest - adjust before submission!
-tracer(0, 0)  # instant drawing (no animation), very useful for debugging
-
-# position to top left corner
-penup()
-left(90)
-forward(200)
-left(90)
-forward(200)
-left(180)
-pendown()
-
-
 # create an enum for the pieces
-class PieceType(Enum):
+class PieceType(IntEnum):
     EMPTY = 0
     WHITE = 1
     BLACK = 2
@@ -46,6 +30,26 @@ class PieceType(Enum):
     WHITE_KING_MOVE = 11
     BLACK_KING_MOVE = 12
 
+for i in range(8):
+    board.append([])
+    for j in range(8):
+        board[i].append(PieceType.EMPTY)
+
+# quick speed for faster debugging
+t.speed(0)  # 0 = fastest, 1 = slowest - adjust before submission!
+tracer(0, 0)  # instant drawing (no animation), very useful for debugging
+
+# position to top t.left corner
+t.penup()
+t.left(90)
+t.forward(200)
+t.left(90)
+t.forward(200)
+t.left(180)
+t.pendown()
+
+
+
 # function to create a square
 
 
@@ -53,76 +57,71 @@ def create_square(endfill=0):
     global c
     if endfill == 1:
         c = 1
-        forward(60)
-        right(90)
-        forward(60)
+        t.forward(60)
+        t.right(90)
+        t.forward(60)
     if c == 0:
-        fillcolor("saddlebrown")
+        t.fillcolor("saddlebrown")
         c = 1
     else:
-        fillcolor("#efceac")
+        t.fillcolor("#efceac")
         c = 0
-    begin_fill()
-    forward(60)
-    right(90)
-    forward(60)
-    right(90)
-    forward(60)
-    right(90)
-    forward(60)
-    right(90)
-    forward(60)
-    end_fill()
-
-
-checker_pieces = {}  # y, x, type
-# ^^ think about renaming var to 'board' when time permits after commit (its late and im tired)
-# function to create a checker piece from top right corner of square
+    t.begin_fill()
+    t.forward(60)
+    t.right(90)
+    t.forward(60)
+    t.right(90)
+    t.forward(60)
+    t.right(90)
+    t.forward(60)
+    t.right(90)
+    t.forward(60)
+    t.end_fill()
 
 
 def create_piece(type):
     if type == "white":
-        color("#d2b26d", "#e9ce9b")
+        t.color("#d2b26d", "#e9ce9b")
     else:
-        color("#1b100b", "#300c09")
-    pensize(3)
-    forward(5)
-    right(90)
-    forward(30)
-    pendown()
-    begin_fill()
-    circle(25)
-    penup()
-    left(90)
-    forward(5)
-    right(90)
-    pendown()
-    circle(20)
-    end_fill()
-    penup()
-    back(30)
-    left(90)
-    back(10)
+        t.color("#1b100b", "#300c09")
+    t.pensize(3)
+    t.forward(5)
+    t.right(90)
+    t.forward(30)
+    t.pendown()
+    t.begin_fill()
+    t.circle(25)
+    t.penup()
+    t.left(90)
+    t.forward(5)
+    t.right(90)
+    t.pendown()
+    t.circle(20)
+    t.end_fill()
+    t.penup()
+    t.back(30)
+    t.left(90)
+    t.back(10)
 
 
 # loop to create board with squares of alternating colours
 while i > 1:
     for j in range(i):
         create_square()
-    right(90)
-    forward(60)
+    t.right(90)
+    t.forward(60)
     for j in range(i):
         create_square()
-    right(90)
-    forward(60)
+    t.right(90)
+    t.forward(60)
     for j in range(i):
         create_square()
-    right(90)
-    forward(60)
+    t.right(90)
+    t.forward(60)
     for j in range(i):
         create_square()
-    right(90)
-    forward(60)
+    t.right(90)
+    t.forward(60)
     i -= 1
     # print(i)
 
@@ -130,55 +129,52 @@ while i > 1:
 create_square(1)
 
 # back to original pos
-penup()
-right(90)
-forward(120)
-right(90)
-forward(120)
-right(90)
+t.penup()
+t.right(90)
+t.forward(120)
+t.right(90)
+t.forward(120)
+t.right(90)
 
 # use board array to put pieces in correct positions
 for y in range(8):
     for x in range(8):
         if (y + x) % 2 != 0:
-            forward(60*x)
-            right(90)
-            forward(60*y)
-            left(90)
+            t.forward(60*x)
+            t.right(90)
+            t.forward(60*y)
+            t.left(90)
             if y < 3:
-                checker_pieces[int(round(pos()[1]-200)/-60)][int(round(pos()[0]+260)/60)] = pos()[1]/60, pos()[0]/60, "white"
+                board[int(round(t.pos()[1]-200)/-60)][int(round(t.pos()[0]+260)/60)] = PieceType.WHITE
                 create_piece("white")
             elif y > 4:
-                checker_pieces[int(round(pos()[1]-200)/-60)][int(round(pos()[0]+260)/60)] = pos()[1]/60, pos()[0]/60, "black"
+                board[int(round(t.pos()[1]-200)/-60)][int(round(t.pos()[0]+260)/60)] = PieceType.BLACK
                 create_piece("black")
 
-            # return to original pos
-            back(60*x)
-            right(90)
-            back(60*y)
-            left(90)
+            # return to original t.pos
+            t.back(60*x)
+            t.right(90)
+            t.back(60*y)
+            t.left(90)
 
 # draw the coordinate of each square on the board
 # this is for debugging purposes
 for y in range(8):
     for x in range(8):
-        forward(60*x)
-        right(90)
-        forward(60*y+30)
-        left(90)
-        forward(30)
-        color('deepskyblue')
-        write(str(x) + ", " + str(y), align="center",
+        t.forward(60*x)
+        t.right(90)
+        t.forward(60*y+30)
+        t.left(90)
+        t.forward(30)
+        t.color('deepskyblue')
+        t.write(str(x) + ", " + str(y), align="center",
               font=("Arial", 18, "normal"))
-        color('black')
-        back(30)
-        back(60*x)
-        right(90)
-        back(60*y+30)
-        left(90)
-
-# log checker pieces dict
-print(checker_pieces)
+        t.color('black')
+        t.back(30)
+        t.back(60*x)
+        t.right(90)
+        t.back(60*y+30)
+        t.left(90)
 
 # make this checkers board playable
 # 0 = empty, 1 = white, 2 = black
@@ -190,17 +186,26 @@ print(checker_pieces)
 
 # create a class for the pieces
 
-
 class Piece:
-    def __init__(self, x, y, colour):
+    def __init__(self, x, y, type):
         self.x = x
         self.y = y
-        self.colour = colour
+        self.type = type
         self.king = False
         self.selected = False
 
-# select a piece to move
 
+# get clicked coordinates
+def get_piece(xraw, yraw):
+    y = math.floor(round(yraw-200)/-60)
+    x = math.floor(round(xraw+260)/60)
+    if y > 7 or x > 7 or x < 0 or y < 0:
+        return print('out of bounds')
+    return print(board[y][x])
+
+window.onscreenclick(get_piece)
+
+# select a piece to move
 
 def select_piece(x, y):
     match board[y][x]:
@@ -289,7 +294,7 @@ def check_move(x, y, x2, y2):
         return False
 
     # check if move is a jump
-    if abs(x - x2) % 2 == 0:  # accounts for all jump magnitudes
+    if abs(x - x2) % 2 == 0:  # accounts for all jump magnitudes    
         if board[y][x] == 1:
             if board[y2 + 1][x2 + 1] != 2 and board[y2 + 1][x2 - 1] != 2:
                 return False
@@ -309,9 +314,6 @@ def check_jump(x, y, x2, y2):
         return False
     # check if jump is in bounds
     if x2 < 0 or x2 > 7 or y2 < 0 or y2 > 7:
-        return False
-    # check if jump is empty
-    if board[y2][x2] != 0:
         return False
     # check if jump is in correct direction
     if board[y][x] == 1 and y2 > y:
@@ -373,8 +375,9 @@ def jump(x, y, x2, y2):
             if x2 < x:
                 board[y2 + 1][x2 + 1] = PieceType.EMPTY
 
-goto(-200, 200)
-stamp()
+t.goto(-200, 200)
+t.stamp()
+mainloop()
 input("Press enter to exit...")
 
 
