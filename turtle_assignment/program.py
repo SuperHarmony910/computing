@@ -86,9 +86,9 @@ def create_square(endfill=0):
     t.end_fill()
 
 
-def create_piece(type):
+def create_piece(type: PieceType):
     checker = t
-    if type == "white":
+    if type == PieceType.WHITE:
         t.color("#d2b26d", "#e9ce9b")
     else:
         t.color("#1b100b", "#300c09")
@@ -155,11 +155,11 @@ for y in range(8):
             if y < 3:
                 board[int(round(t.pos()[1]-200)//-60)
                       ][int(round(t.pos()[0]+260)//60)].type = PieceType.WHITE
-                create_piece("white")
+                create_piece(PieceType.WHITE)
             elif y > 4:
                 board[int(round(t.pos()[1]-200)//-60)
                       ][int(round(t.pos()[0]+260)//60)].type = PieceType.BLACK
-                create_piece("black")
+                create_piece(PieceType.BLACK)
 
             # return to original t.pos
             t.back(60*x)
@@ -177,8 +177,8 @@ for y in range(8):
         t.left(90)
         t.forward(30)
         t.color('deepskyblue')
-        t.write(str(x) + ", " + str(y), align="center",
-                font=("Arial", 18, "normal"))
+        #t.write(str(x) + ", " + str(y), align="center",
+                #font=("Arial", 18, "normal"))
         t.color('black')
         t.back(30)
         t.back(60*x)
@@ -249,7 +249,6 @@ def available_squares(x, y):
                     y = y - 2
                     x = x - 2
 
-    print(available_squares)
     return available_squares
 
 
@@ -264,6 +263,8 @@ def mouse_event(xraw, yraw): # returns x, y, is_move_to
     
     print(x, y, board[y][x].selected)
     if selected[2] == True:
+        print(selected[0], selected[1], x, y)
+        print('ASFLDJFADSKLJLADSJKLFDSJKLJAJDASFJSADFJKLSDAFJJFDSL;AJFSD', move_piece(selected[0], selected[1], x, y))
         selected[0] = False
         selected[1] = False
         selected[2] = False
@@ -284,8 +285,6 @@ def mouse_event(xraw, yraw): # returns x, y, is_move_to
     except:
         board[selected[0]][selected[1]] = Piece(selected[0], selected[1], PieceType.EMPTY)
 
-    print(f'available squares: {available_squares(x, y)}')
-
 # function to check if a move is valid
 def check_move(x, y, x2, y2):
     # check if move is diagonal
@@ -301,14 +300,7 @@ def check_move(x, y, x2, y2):
         return False
 
     # check if move is empty
-    if board[y2][x2] != 0:
-        return False
-
-    # check if move is in correct direction
-    if board[y][x] == 1 and y2 > y:
-        return False
-
-    if board[y][x] == 2 and y2 < y:
+    if board[y2][x2].type != PieceType.EMPTY:
         return False
 
     # check if move is a jump
@@ -321,19 +313,28 @@ def check_move(x, y, x2, y2):
     return True
 
 # create the animation for the checker piece to move
+def animate_move(x, y, x2, y2):
+    print('ssusyabak')
+    t.goto(x * 60 - 260, y * -60 + 200)
+    create_square(0)
+    t.goto(x2 * 60 - 260, y2 * -60 + 200)
+    create_piece(board[y][x].type)
+
+# create the animation for the checker piece to move
 def move_piece(x, y, x2, y2):
     # check if the move is valid
     if check_move(x, y, x2, y2):
         # move the piece
         board[y2][x2] = board[y][x]
+        animate_move(x, y, x2, y2)
         # set previous piece to empty
-        board[y][x] = Piece(x, y, PieceType.EMPTY, False, False, False)
+        board[y][x] = Piece(x, y, PieceType.EMPTY)
         # check if the piece is a king
         if board[y2][x2].type == PieceType.WHITE and y2 == 7:
             board[y2][x2].king = True
         if board[y2][x2] == PieceType.BLACK and y2 == 0:
             board[y2][x2].king = True
-        # check if the move is a jump
+        # check if move is jump. if move is not jump, default case will handle move
         match abs(x - x2):
             case 2:
                 board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
@@ -351,15 +352,33 @@ def move_piece(x, y, x2, y2):
                 return 'triple jump'
 
 # highlight moves
-def highlight_moves(xy, rm):
+unhighlight = []
+def highlight_moves(xy, rm: bool):
+    global unhighlight
     h = Turtle()
     h.hideturtle()
     h.penup()
+    # remove previous highlight
+    for x, y in unhighlight:
+        h.goto(x * 60 - 260, y * -60 + 200)
+        h.forward(15)
+        h.right(90)
+        h.forward(30)
+        h.color("#8b4513")
+        h.begin_fill()
+        h.circle(15)
+        h.end_fill()
+        h.color(0, 0, 0)
+        h.back(30)
+        h.left(90)
+        h.back(30)
+
+    # create highlight
     for i in xy:
         x = i[0]
         y = i[1]
+        unhighlight.append([x, y])
         h.goto(x * 60 - 260, y * -60 + 200)
-        h.stamp()
         h.forward(15)
         h.right(90)
         h.forward(30)
@@ -369,7 +388,6 @@ def highlight_moves(xy, rm):
             h.color("#003e92")
         h.begin_fill()
         h.circle(15)
-        print(h.pos())
         h.end_fill()
         h.color(0, 0, 0)
         h.back(30)
@@ -380,7 +398,7 @@ window.onscreenclick(mouse_event)
 
 t.goto(-200, 200)
 t.stamp()
-input("Press enter to exit...")
+#t.onkeypress('enter', t.bye())
 mainloop()
 
 
