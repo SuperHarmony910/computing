@@ -60,13 +60,15 @@ t.pendown()
 
 
 # function to create a square
-def create_square(endfill=0):
+def create_square(endfill=0, replace=False):
     global c
     if endfill == 1:
         c = 1
         t.forward(60)
         t.right(90)
         t.forward(60)
+    if replace == True:
+        c = 0
     if c == 0:
         t.fillcolor("saddlebrown")
         c = 1
@@ -263,20 +265,20 @@ def mouse_event(xraw, yraw): # returns x, y, is_move_to
     
     print(x, y, board[y][x].selected)
     if selected[2] == True:
+        highlight_moves(available_squares(x, y), True)
         print(selected[0], selected[1], x, y)
         print('ASFLDJFADSKLJLADSJKLFDSJKLJAJDASFJSADFJKLSDAFJJFDSL;AJFSD', move_piece(selected[0], selected[1], x, y))
         selected[0] = False
         selected[1] = False
         selected[2] = False
         is_move_to = True
-        highlight_moves(available_squares(x, y), True)
         #return x, y, True
     else:
+        highlight_moves(available_squares(x, y), False)
         selected[0] = x
         selected[1] = y
         selected[2] = True
         is_move_to = False
-        highlight_moves(available_squares(x, y), False)
     #return x, y, False
 
     try:
@@ -316,7 +318,7 @@ def check_move(x, y, x2, y2):
 def animate_move(x, y, x2, y2):
     print('ssusyabak')
     t.goto(x * 60 - 260, y * -60 + 200)
-    create_square(0)
+    create_square(False, True)
     t.goto(x2 * 60 - 260, y2 * -60 + 200)
     create_piece(board[y][x].type)
 
