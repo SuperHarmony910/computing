@@ -32,6 +32,8 @@ class PieceType(IntEnum):
     # WHITE_KING_MOVE = 11
     # BLACK_KING_MOVE = 12
 
+move = PieceType.BLACK
+
 class Piece:
     def __init__(self, x, y, type: PieceType, king = False, selected = False):
         self.x = x
@@ -62,6 +64,7 @@ t.pendown()
 # function to create a square
 def create_square(endfill=0, replace=False):
     global c
+    t.pendown()
     if endfill == 1:
         c = 1
         t.forward(60)
@@ -69,6 +72,7 @@ def create_square(endfill=0, replace=False):
         t.forward(60)
     if replace == True:
         c = 0
+        t.pensize(0)
     if c == 0:
         t.fillcolor("saddlebrown")
         c = 1
@@ -86,6 +90,7 @@ def create_square(endfill=0, replace=False):
     t.right(90)
     t.forward(60)
     t.end_fill()
+    t.penup()
 
 
 def create_piece(type: PieceType):
@@ -179,8 +184,8 @@ for y in range(8):
         t.left(90)
         t.forward(30)
         t.color('deepskyblue')
-        #t.write(str(x) + ", " + str(y), align="center",
-                #font=("Arial", 18, "normal"))
+        t.write(str(x) + ", " + str(y), align="center",
+                font=("Arial", 18, "normal"))
         t.color('black')
         t.back(30)
         t.back(60*x)
@@ -195,6 +200,42 @@ for y in range(8):
 # 7 = white king selected, 8 = black king selected
 # 9 = white move, 10 = black move
 # 11 = white king move, 12 = black king move
+
+# create the animation for the checker piece to move
+def move_piece(x, y, x2, y2):
+    # check if the move is valid
+    if check_move(x, y, x2, y2):
+        # move the piece
+        board[y2][x2] = board[y][x]
+        animate_move(x, y, x2, y2)
+        print(f'black piece moved to: {x2}, {y2}')
+        # set previous piece to empty
+        board[y][x] = Piece(x, y, PieceType.EMPTY)
+        # check if the piece is a king
+        if board[y2][x2].type == PieceType.WHITE and y2 == 7:
+            board[y2][x2].king = True
+            king_piece(x2, y2)
+        if board[y2][x2] == PieceType.BLACK and y2 == 0:
+            print('black king')
+            board[y2][x2].king = True
+            king_piece(x2, y2)
+        print('kinged?', board[y2][x2].king)
+        # check if move is jump. if move is not jump, default case will handle move
+        match abs(x - x2):
+            case 2:
+                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
+                return 'jump'
+            # check if the move is a double jump
+            case 4:
+                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
+                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
+                return 'double jump'
+            # check if the move is a triple jump
+            case 6:
+                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
+                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
+                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
+                return 'triple jump'
 
 # check which squares are available
 def available_squares(x, y):
@@ -213,19 +254,16 @@ def available_squares(x, y):
                 if board[y][x].king == True:
                     if board[y-1][x+1].type == PieceType.EMPTY:
                         available_squares.append([x+1, y+1])
-
-                while board[y+1][x+1].type == PieceType.WHITE:
-                    y = y + 2
-                    x = x + 2
-                while board[y-1][x+1].type == PieceType.WHITE:
-                    y = y - 2
-                    x = x + 2
-                while board[y+1][x-1].type == PieceType.WHITE:
-                    y = y + 2
-                    x = x - 2
-                while board[y-1][x-1].type == PieceType.WHITE:
-                    y = y - 2
-                    x = x - 2
+                if y < 1:
+                    if board[y+1][x+1].type == PieceType.WHITE and board[y+2][x+2].type == PieceType.EMPTY:
+                        available_squares = [[x+2, y+2]]
+                    if board[y-1][x+1].type == PieceType.WHITE and board[y-2][x+2].type == PieceType.EMPTY:
+                        available_squares = [[x+2, y-2]]
+                    if board[y+1][x-1].type == PieceType.WHITE and board[y+2][x-2].type == PieceType.EMPTY:
+                        available_squares = [[x-2, y+2]]
+                    if board[y-1][x-1].type == PieceType.WHITE and board[y-2][x-2].type == PieceType.EMPTY:
+                        available_squares = [[x-2, y-2]]
+                    
             if board[y][x].type == PieceType.WHITE:
                 print('white')
                 if board[y+1][x+1].type == PieceType.EMPTY:
@@ -237,19 +275,15 @@ def available_squares(x, y):
                         available_squares.append([x+1, y-1])
                     if board[y-1][x-1].type == PieceType.EMPTY:
                         available_squares.append([x-1, y-1])
-                        
-                while board[y+1][x+1].type == PieceType.BLACK:
-                    y = y + 2
-                    x = x + 2
-                while board[y-1][x+1].type == PieceType.BLACK:
-                    y = y - 2
-                    x = x + 2
-                while board[y+1][x-1].type == PieceType.BLACK:
-                    y = y + 2
-                    x = x - 2
-                while board[y-1][x-1].type == PieceType.BLACK:
-                    y = y - 2
-                    x = x - 2
+                if y < 6:
+                    if board[y+1][x+1].type == PieceType.BLACK and board[y+2][x+2].type == PieceType.EMPTY:
+                        available_squares = [[x+2, y+2]]
+                    if board[y-1][x+1].type == PieceType.BLACK and board[y-2][x+2].type == PieceType.EMPTY:
+                        available_squares = [[x+2, y-2]]
+                    if board[y+1][x-1].type == PieceType.BLACK and board[y+2][x-2].type == PieceType.EMPTY:
+                        available_squares = [[x-2, y+2]]
+                    if board[y-1][x-1].type == PieceType.BLACK and board[y-2][x-2].type == PieceType.EMPTY:
+                        available_squares = [[x-2, y-2]]
 
     return available_squares
 
@@ -258,16 +292,19 @@ def available_squares(x, y):
 def mouse_event(xraw, yraw): # returns x, y, is_move_to
     global selected
     global is_move_to
+    global move
     y = math.floor(round(yraw-200)//-60)
     x = math.floor(round(xraw+260)//60)
     if y > 7 or x > 7 or x < 0 or y < 0:
         return False  # print('out of bounds')
     
-    print(x, y, board[y][x].selected)
+    # if move != board[y][x].type and selected[2] == False:
+    #     return False
+    
     if selected[2] == True:
         highlight_moves(available_squares(x, y), True)
         print(selected[0], selected[1], x, y)
-        print('ASFLDJFADSKLJLADSJKLFDSJKLJAJDASFJSADFJKLSDAFJJFDSL;AJFSD', move_piece(selected[0], selected[1], x, y))
+        move_piece(selected[0], selected[1], x, y)
         selected[0] = False
         selected[1] = False
         selected[2] = False
@@ -316,42 +353,19 @@ def check_move(x, y, x2, y2):
 
 # create the animation for the checker piece to move
 def animate_move(x, y, x2, y2):
-    print('ssusyabak')
     t.goto(x * 60 - 260, y * -60 + 200)
     create_square(False, True)
     t.goto(x2 * 60 - 260, y2 * -60 + 200)
     create_piece(board[y][x].type)
 
-# create the animation for the checker piece to move
-def move_piece(x, y, x2, y2):
-    # check if the move is valid
-    if check_move(x, y, x2, y2):
-        # move the piece
-        board[y2][x2] = board[y][x]
-        animate_move(x, y, x2, y2)
-        # set previous piece to empty
-        board[y][x] = Piece(x, y, PieceType.EMPTY)
-        # check if the piece is a king
-        if board[y2][x2].type == PieceType.WHITE and y2 == 7:
-            board[y2][x2].king = True
-        if board[y2][x2] == PieceType.BLACK and y2 == 0:
-            board[y2][x2].king = True
-        # check if move is jump. if move is not jump, default case will handle move
-        match abs(x - x2):
-            case 2:
-                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
-                return 'jump'
-            # check if the move is a double jump
-            case 4:
-                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
-                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
-                return 'double jump'
-            # check if the move is a triple jump
-            case 6:
-                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
-                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
-                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
-                return 'triple jump'
+def king_piece(x, y):
+    print('KINGED')
+    t.goto(x * 60 - 260, y * -60 + 200)
+    t.right(90)
+    t.fd(30)
+    # set colour to gold
+    t.color("#ffd700", "#ffd700")
+    t.circle(15)
 
 # highlight moves
 unhighlight = []
@@ -362,6 +376,8 @@ def highlight_moves(xy, rm: bool):
     h.penup()
     # remove previous highlight
     for x, y in unhighlight:
+        if board[y][x].type != PieceType.EMPTY:
+            continue
         h.goto(x * 60 - 260, y * -60 + 200)
         h.forward(15)
         h.right(90)
@@ -379,7 +395,6 @@ def highlight_moves(xy, rm: bool):
     for i in xy:
         x = i[0]
         y = i[1]
-        unhighlight.append([x, y])
         h.goto(x * 60 - 260, y * -60 + 200)
         h.forward(15)
         h.right(90)
@@ -395,6 +410,7 @@ def highlight_moves(xy, rm: bool):
         h.back(30)
         h.left(90)
         h.back(30)
+        unhighlight.append([x, y])
 
 window.onscreenclick(mouse_event)
 
