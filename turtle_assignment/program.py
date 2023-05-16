@@ -4,6 +4,8 @@ from turtle import Turtle, Screen, setup, tracer, mainloop
 
 t = Turtle()
 writer = Turtle()
+writer.penup()
+writer.hideturtle()
 
 # setting
 setup(0.5401041667, 0.80546875, 0.5, 0.5)
@@ -11,15 +13,20 @@ window = Screen()
 window.title("Checkers Assignment")
 window.bgcolor("darkslateblue")
 
+# quick speed for faster debugging
+t.speed(0)  # 0 = fastest, 1 = slowest - adjust before submission!
+tracer(0, 0)  # instant drawing (no animation), very useful for debugging
+
 i = 7  # square iterator
 c = 0  # colour iterator
 board = []  # board array
 selected = [0, 0, False]  # if a piece is selected or not
-is_move_to = False  # if a piece is selected and is moving to a square
+
+t.goto(200, 220)
+t.write('Checkers Assignment', font="Arial, 30")
+t.goto(0, 0)
 
 # create a class for the pieces
-
-
 class PieceType(IntEnum):
     EMPTY = 0
     WHITE = 1
@@ -53,9 +60,6 @@ for i in range(8):
     for j in range(8):
         board[i].append(Piece(i, j, PieceType.EMPTY))
 
-# quick speed for faster debugging
-t.speed(0)  # 0 = fastest, 1 = slowest - adjust before submission!
-tracer(0, 0)  # instant drawing (no animation), very useful for debugging
 
 # position to top t.left corner
 t.penup()
@@ -144,7 +148,6 @@ while i > 1:
     t.right(90)
     t.forward(60)
     i -= 1
-    # print(i)
 
 # create final square
 create_square(1)
@@ -249,20 +252,35 @@ def move_piece(x, y, x2, y2):
 
 
 def available_squares(x, y):
+    def try_except(x, y, tested_type=PieceType.EMPTY):
+        if tested_type == PieceType.EMPTY: # this is for regular jumps
+            try:
+                if board[y][x].type == tested_type:
+                    return True
+            except IndexError:
+                pass
+            return False
+        else: # this is for taking pieces
+            try:
+                if board[y][x].type == tested_type:
+                    return True
+            except IndexError:
+                pass
+            return False
     available_squares = []
     # make sure coordinate is not out of bounds
-    if x < 7 and y < 7:
+    if x < 8 and y < 8:
         if x >= 0 and y >= 0:
             if board[y][x].type == PieceType.BLACK:
-                if board[y-1][x+1].type == PieceType.EMPTY:  # possibility one
+                if try_except(x+1, y-1):  # possibility one
                     available_squares.append([x+1, y-1])
-                if board[y-1][x-1].type == PieceType.EMPTY:  # possibility two
+                if try_except(x-1, y-1):  # possibility two
                     available_squares.append([x-1, y-1])
 
                 if board[y][x].king == True:  # if a king
-                    if board[y-1][x+1].type == PieceType.EMPTY:  # possibility three as king
+                    if try_except(x+1, y-1):  # possibility three as king
                         available_squares.append([x+1, y-1])
-                    if board[y+1][x-1].type == PieceType.EMPTY:  # possibility four as king
+                    if try_except(x-1, y+1):  # possibility four as king
                         available_squares.append([x-1, y+1])
                 if y > 1:  # black cannot take a piece on the seenth rank
                     return available_squares
@@ -288,15 +306,14 @@ def available_squares(x, y):
                     pass
 
             if board[y][x].type == PieceType.WHITE:
-                print('white')
-                if board[y+1][x+1].type == PieceType.EMPTY:
+                if try_except(x+1, y+1):
                     available_squares.append([x+1, y+1])
-                if board[y+1][x-1].type == PieceType.EMPTY:
+                if try_except(x-1, y+1):
                     available_squares.append([x-1, y+1])
                 if board[y][x].king == True:
-                    if board[y-1][x+1].type == PieceType.EMPTY:
+                    if try_except(x+1, y-1):
                         available_squares.append([x+1, y-1])
-                    if board[y-1][x-1].type == PieceType.EMPTY:
+                    if try_except(x-1, y-1):
                         available_squares.append([x-1, y-1])
                 if y > 6:  # you cant take a piece on the seventh rank
                     return available_squares
@@ -327,31 +344,28 @@ def available_squares(x, y):
 # get clicked coordinates
 def mouse_event(xraw, yraw):  # returns x, y, is_move_to
     global selected
-    global is_move_to
     global move
     y = math.floor(round(yraw-200)//-60)
     x = math.floor(round(xraw+260)//60)
     if y > 7 or x > 7 or x < 0 or y < 0:
         return False  # print('out of bounds')
+    
+    # check if piece was moved
+    
 
-    if move != board[y][x].type and selected[2] == False:
-        return False
 
     if selected[2] == True:
         highlight_moves(available_squares(x, y), True)
-        print(selected[0], selected[1], x, y)
         move_piece(selected[0], selected[1], x, y)
         selected[0] = False
         selected[1] = False
         selected[2] = False
-        is_move_to = True
         # return x, y, True
     else:
         highlight_moves(available_squares(x, y), False)
         selected[0] = x
         selected[1] = y
         selected[2] = True
-        is_move_to = False
     # return x, y, False
 
     try:
@@ -365,12 +379,12 @@ def mouse_event(xraw, yraw):  # returns x, y, is_move_to
     if selected[2] == False:
         if board[y][x].type == PieceType.BLACK:
             move = PieceType.WHITE
-            writer.undo()
+            writer.clear()
             writer.goto(-100, 220)
             writer.write('its whites turn', font="Arial, 30")
         elif board[y][x].type == PieceType.WHITE:
             move = PieceType.BLACK
-            writer.undo()
+            writer.clear()
             writer.goto(-100, 220)
             writer.write('its blacks turn', font="Arial, 30")  
 
@@ -415,6 +429,7 @@ def check_move(x, y, x2, y2):
 
 
 def animate_move(x, y, x2, y2):
+    
     t.goto(x * 60 - 260, y * -60 + 200)
     create_square(False, True)
     t.goto(x2 * 60 - 260, y2 * -60 + 200)
