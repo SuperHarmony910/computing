@@ -3,6 +3,7 @@ import math
 from turtle import Turtle, Screen, setup, tracer, mainloop
 
 t = Turtle()
+writer = Turtle()
 
 # setting
 setup(0.5401041667, 0.80546875, 0.5, 0.5)
@@ -333,8 +334,8 @@ def mouse_event(xraw, yraw):  # returns x, y, is_move_to
     if y > 7 or x > 7 or x < 0 or y < 0:
         return False  # print('out of bounds')
 
-    # if move != board[y][x].type and selected[2] == False:
-    #     return False
+    if move != board[y][x].type and selected[2] == False:
+        return False
 
     if selected[2] == True:
         highlight_moves(available_squares(x, y), True)
@@ -359,6 +360,19 @@ def mouse_event(xraw, yraw):  # returns x, y, is_move_to
     except:
         board[selected[0]][selected[1]] = Piece(
             selected[0], selected[1], PieceType.EMPTY)
+    
+    # write who's turn it is
+    if selected[2] == False:
+        if board[y][x].type == PieceType.BLACK:
+            move = PieceType.WHITE
+            writer.undo()
+            writer.goto(-100, 220)
+            writer.write('its whites turn', font="Arial, 30")
+        elif board[y][x].type == PieceType.WHITE:
+            move = PieceType.BLACK
+            writer.undo()
+            writer.goto(-100, 220)
+            writer.write('its blacks turn', font="Arial, 30")  
 
 # function to check if a move is valid
 
@@ -469,7 +483,6 @@ window.onscreenclick(mouse_event)
 
 t.goto(-200, 200)
 t.stamp()
-# t.onkeypress('enter', t.bye())
 mainloop()
 
 
