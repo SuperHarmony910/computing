@@ -22,10 +22,12 @@ c = 0  # colour iterator
 board = []  # board array
 selected = [0, 0, False]  # if a piece is selected or not
 
-t.goto(200, 220)
-font = "Arial, 30"
+t.penup()
+t.goto(-200, 350)
+font = ("monospace", 30, "normal")
 t.write('Checkers Assignment', font=font)
 t.goto(0, 0)
+t.pd()
 
 # create a class for the pieces
 
@@ -222,6 +224,7 @@ def move_piece(x, y, x2, y2):
     # check if the move is valid
     if check_move(x, y, x2, y2):
         # move the piece
+        print(f'took off: {x}, {y} - landed: {x2}, {y2}')
         board[y2][x2] = board[y][x]
         animate_move(x, y, x2, y2)
         print(f'black piece moved to: {x2}, {y2}')
@@ -237,21 +240,7 @@ def move_piece(x, y, x2, y2):
             king_piece(x2, y2)
         print('kinged?', board[y2][x2].king)
         # check if move is jump. if move is not jump, default case will handle move
-        match abs(x - x2):
-            case 2:
-                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
-                return 'jump'
-            # check if the move is a double jump
-            case 4:
-                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
-                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
-                return 'double jump'
-            # check if the move is a triple jump
-            case 6:
-                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
-                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
-                board[(y + y2) // 2][(x + x2) // 2].type = PieceType.EMPTY
-                return 'triple jump'
+
 
 # check which squares are available
 
@@ -328,22 +317,22 @@ def available_squares(x, y):
                 if y > 6:  # you cant take a piece on the seventh rank
                     return available_squares
                 try:
-                    if board[y+1][x+1].type == PieceType.BLACK and board[y+2][x+2].type == PieceType.EMPTY:
+                    if board[y+1][x+1].type == PieceType.BLACK and try_except(x+2, y+2):
                         available_squares = [[x+2, y+2]]
                 except IndexError:
                     pass
                 try:
-                    if board[y-1][x+1].type == PieceType.BLACK and board[y-2][x+2].type == PieceType.EMPTY:
+                    if board[y-1][x+1].type == PieceType.BLACK and try_except(x+2, y-2):
                         available_squares = [[x+2, y-2]]
                 except IndexError:
                     pass
                 try:
-                    if board[y+1][x-1].type == PieceType.BLACK and board[y+2][x-2].type == PieceType.EMPTY:
+                    if board[y+1][x-1].type == PieceType.BLACK and try_except(x-2, y+2):
                         available_squares = [[x-2, y+2]]
                 except IndexError:
                     pass
                 try:
-                    if board[y-1][x-1].type == PieceType.BLACK and board[y-2][x-2].type == PieceType.EMPTY:
+                    if board[y-1][x-1].type == PieceType.BLACK and try_except(x-2, y-2):
                         available_squares = [[x-2, y-2]]
                 except IndexError:
                     pass
@@ -419,29 +408,22 @@ def check_move(x, y, x2, y2):
     # check if move is empty
     if board[y2][x2].type != PieceType.EMPTY:
         return False
-
-    # check if move is a jump
-    if abs(x - x2) % 2 == 0:  # accounts for all jump magnitudes
-        if board[(y + y2) // 2][(x + x2) // 2] == 0:  # check if piece exists
-            return False
-        else:
-            board[(y + y2) // 2][(x + x2) // 2] = 0  # remove piece
-            return True
-    
-    # if not jump, check if move is 1 square
-    if abs(x - x2) != 1:
-        return False
     return True
 
 # create the animation for the checker piece to move
 
 
 def animate_move(x, y, x2, y2):
-
     t.goto(x * 60 - 260, y * -60 + 200)
     create_square(False, True)
     t.goto(x2 * 60 - 260, y2 * -60 + 200)
     create_piece(board[y][x].type)
+    # check if move is a jump
+    if abs(x - x2) % 2 == 0:  # accounts for all jump magnitudes
+        if board[(y + y2) // 2][(x + x2) // 2]:  # look for the piece in the middle
+
+            t.goto(((x + x2) // 2) * 60 - 260, ((y + y2) // 2) * -60 + 200)
+            create_square(False, True)
 
 
 def king_piece(x, y):

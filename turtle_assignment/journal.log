@@ -40,6 +40,10 @@ Criteria for success: the game must be playable, and the rules of checkers must 
 
 	- I encountered an "IndexError" when I attempted to search for values in the 'board' array arbitrarily, which were out of range.
 		I solved this by using a try-except statement to catch the error and ignore it.
+
+	- I encountered an "AttributeError" when I attempted to access types in certain variables in the 'board' matrix; the error
+		was that the variable was an integer, and I was attempting to access it as a custom type. I solved this by using a try-except
+		statement by making all the types into enums.
 	
 	
 
