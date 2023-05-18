@@ -27,6 +27,8 @@ t.write('Checkers Assignment', font="Arial, 30")
 t.goto(0, 0)
 
 # create a class for the pieces
+
+
 class PieceType(IntEnum):
     EMPTY = 0
     WHITE = 1
@@ -214,6 +216,8 @@ for y in range(8):
 
 
 def move_piece(x, y, x2, y2):
+    if [x2, y2] not in available_squares(x, y):
+        return False
     # check if the move is valid
     if check_move(x, y, x2, y2):
         # move the piece
@@ -253,14 +257,16 @@ def move_piece(x, y, x2, y2):
 
 def available_squares(x, y):
     def try_except(x, y, tested_type=PieceType.EMPTY):
-        if tested_type == PieceType.EMPTY: # this is for regular jumps
+        if x < 0 or y < 0:
+            return False
+        if tested_type == PieceType.EMPTY:  # this is for regular jumps
             try:
                 if board[y][x].type == tested_type:
                     return True
             except IndexError:
                 pass
             return False
-        else: # this is for taking pieces
+        else:  # this is for taking pieces
             try:
                 if board[y][x].type == tested_type:
                     return True
@@ -270,7 +276,7 @@ def available_squares(x, y):
     available_squares = []
     # make sure coordinate is not out of bounds
     if x < 8 and y < 8:
-        if x >= 0 and y >= 0:
+        if x > -1 and y > -1:
             if board[y][x].type == PieceType.BLACK:
                 if try_except(x+1, y-1):  # possibility one
                     available_squares.append([x+1, y-1])
@@ -282,23 +288,26 @@ def available_squares(x, y):
                         available_squares.append([x+1, y-1])
                     if try_except(x-1, y+1):  # possibility four as king
                         available_squares.append([x-1, y+1])
-                if y > 1:  # black cannot take a piece on the seenth rank
-                    return available_squares
+
                 try:
                     if board[y+1][x+1].type == PieceType.WHITE and board[y+2][x+2].type == PieceType.EMPTY:
                         available_squares = [[x+2, y+2]]
                 except IndexError:
+                    print('index error')
                     pass
+
                 try:
                     if board[y-1][x+1].type == PieceType.WHITE and board[y-2][x+2].type == PieceType.EMPTY:
                         available_squares = [[x+2, y-2]]
                 except IndexError:
                     pass
+
                 try:
                     if board[y+1][x-1].type == PieceType.WHITE and board[y+2][x-2].type == PieceType.EMPTY:
                         available_squares = [[x-2, y+2]]
                 except IndexError:
                     pass
+
                 try:
                     if board[y-1][x-1].type == PieceType.WHITE and board[y-2][x-2].type == PieceType.EMPTY:
                         available_squares = [[x-2, y-2]]
@@ -349,10 +358,8 @@ def mouse_event(xraw, yraw):  # returns x, y, is_move_to
     x = math.floor(round(xraw+260)//60)
     if y > 7 or x > 7 or x < 0 or y < 0:
         return False  # print('out of bounds')
-    
-    # check if piece was moved
-    
 
+    # check if piece was actually moved before changing move variable to signify which player's turn it is
 
     if selected[2] == True:
         highlight_moves(available_squares(x, y), True)
@@ -370,11 +377,11 @@ def mouse_event(xraw, yraw):  # returns x, y, is_move_to
 
     try:
         board[selected[0]][selected[1]].selected = selected[2]
-        print(f'available squares: {available_squares(x, y)}')
+        print(f'coords: {x}, {y}, available squares: {available_squares(x, y)}, type: {board[y][x].type}')
     except:
         board[selected[0]][selected[1]] = Piece(
             selected[0], selected[1], PieceType.EMPTY)
-    
+
     # write who's turn it is
     if selected[2] == False:
         if board[y][x].type == PieceType.BLACK:
@@ -386,7 +393,7 @@ def mouse_event(xraw, yraw):  # returns x, y, is_move_to
             move = PieceType.BLACK
             writer.clear()
             writer.goto(-100, 220)
-            writer.write('its blacks turn', font="Arial, 30")  
+            writer.write('its blacks turn', font="Arial, 30")
 
 # function to check if a move is valid
 
@@ -404,10 +411,6 @@ def check_move(x, y, x2, y2):
         if board[y][x].type == PieceType.WHITE:
             return False
 
-    # check if move is 1 square
-    if abs(x - x2) != 1:
-        return False
-
     # check if move is in bounds
     if x2 < 0 or x2 > 7 or y2 < 0 or y2 > 7:
         return False
@@ -423,13 +426,17 @@ def check_move(x, y, x2, y2):
         else:
             board[(y + y2) // 2][(x + x2) // 2] = 0  # remove piece
             return True
+    
+    # if not jump, check if move is 1 square
+    if abs(x - x2) != 1:
+        return False
     return True
 
 # create the animation for the checker piece to move
 
 
 def animate_move(x, y, x2, y2):
-    
+
     t.goto(x * 60 - 260, y * -60 + 200)
     create_square(False, True)
     t.goto(x2 * 60 - 260, y2 * -60 + 200)
