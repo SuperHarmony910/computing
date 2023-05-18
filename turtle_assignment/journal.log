@@ -1,4 +1,5 @@
 Objective: created a chequered board to play checkers on.
+Criteria for success: the game must be playable, and the rules of checkers must be followed.
 
 -	A function was made to facilitate the creation of squares.
 
@@ -16,3 +17,30 @@ Objective: created a chequered board to play checkers on.
 		I discovered this principle when I was listing out the pairs of numbers in an x-y relationship,
 		attempting to determine a correlation between every pair of coordinates that contained a checker piece.
 		General ability skills come in handy sometimes :)
+
+-	Now, onto the logic. I created five core functions: `available_squares()`, `check_move()`, `move_piece()`,
+	`animate_move()`, and `mouse_event()`
+		available_squares(): This function used preprogrammed mathematical facts which dictate the motion of the
+		respective colour's checker piece. This was used hand-in-hand with the function `highlight_move()` to
+		create blue circles upon squares which denote that it is a possible square to travel to.
+
+		check_move(): This function is merely to check if a move is valid and legal.
+
+		move_piece(): This function handles the technical moving of the piece upon the 'board' array, then calls the `animate_move()`
+		function to animate the move.
+
+		animate_move(): This function facilitates the animation of the move to its destination square after moving or taking a piece.
+
+		mouse_event(): This function handles and filters all mouse events to ensure that the game is played properly.
+
+- Errors encountered:
+	- I encountered a problem with the `move_piece()` function, where the piece would not move to the correct square.
+		I solved this by using the `animate_move()` function to move the piece to the correct square, then using the
+		`move_piece()` function to set that value into the array, rather than animating and adding to the array in one function.
+
+	- I encountered an "IndexError" when I attempted to search for values in the 'board' array arbitrarily, which were out of range.
+		I solved this by using a try-except statement to catch the error and ignore it.
+	
+	
+
+

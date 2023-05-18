@@ -23,7 +23,8 @@ board = []  # board array
 selected = [0, 0, False]  # if a piece is selected or not
 
 t.goto(200, 220)
-t.write('Checkers Assignment', font="Arial, 30")
+font = "Arial, 30"
+t.write('Checkers Assignment', font=font)
 t.goto(0, 0)
 
 # create a class for the pieces
@@ -61,7 +62,7 @@ for i in range(8):
         board[i].append(Piece(i, j, PieceType.EMPTY))
 
 
-# position to top t.left corner
+# position to top left corner
 t.penup()
 t.left(90)
 t.forward(200)
@@ -381,7 +382,7 @@ def mouse_event(xraw, yraw):  # returns x, y, is_move_to
             move = PieceType.WHITE
             writer.clear()
             writer.goto(-100, 220)
-            writer.write('its whites turn', font="Arial, 30")
+            writer.write('its whites turn', font=font)
         elif board[y][x].type == PieceType.WHITE:
             move = PieceType.BLACK
             writer.clear()
