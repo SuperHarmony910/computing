@@ -260,25 +260,25 @@ def available_squares(x, y):
                         available_squares.append([x-1, y+1])
 
                 try:
-                    if board[y+1][x+1].type == PieceType.WHITE and board[y+2][x+2].type == PieceType.EMPTY and board[y][x].king == True:
+                    if try_except(x+1, y+1, PieceType.WHITE) and board[y+2][x+2].type == PieceType.EMPTY and board[y][x].king == True:
                         available_squares = [[x+2, y+2]]
                 except IndexError:
                     pass
 
                 try:
-                    if board[y-1][x+1].type == PieceType.WHITE and board[y-2][x+2].type == PieceType.EMPTY:
+                    if try_except(x+1, y-1, PieceType.WHITE) and board[y-2][x+2].type == PieceType.EMPTY:
                         available_squares = [[x+2, y-2]]
                 except IndexError:
                     pass
 
                 try:
-                    if board[y+1][x-1].type == PieceType.WHITE and board[y+2][x-2].type == PieceType.EMPTY and board[y][x].king == True:
+                    if try_except(x-1, y+1, PieceType.WHITE) and board[y+2][x-2].type == PieceType.EMPTY and board[y][x].king == True:
                         available_squares = [[x-2, y+2]]
                 except IndexError:
                     pass
 
                 try:
-                    if board[y-1][x-1].type == PieceType.WHITE and board[y-2][x-2].type == PieceType.EMPTY:
+                    if try_except(x-1, y-1, PieceType.WHITE) and board[y-2][x-2].type == PieceType.EMPTY:
                         available_squares = [[x-2, y-2]]
                 except IndexError:
                     pass
@@ -326,6 +326,49 @@ def available_squares(x, y):
 
 # get clicked coordinates
 def mouse_event(xraw, yraw):  # runs when a mouse event is detected
+    # when all pieces from one side are removed, the game ends
+    def check_win():
+        white = 0
+        black = 0
+        for i in board:
+            for j in i:
+                if j.type == PieceType.WHITE:
+                    white += 1
+                if j.type == PieceType.BLACK:
+                    black += 1
+        if white == 0:
+            return PieceType.BLACK
+        if black == 0:
+            return PieceType.WHITE
+        return False
+
+    def draw_star(size, color):
+        angle = 120
+        t.fillcolor(color)
+        t.begin_fill()
+
+        for side in range(5):
+            t.forward(size)
+            t.right(angle)
+            t.forward(size)
+            t.right(72 - angle)
+        t.end_fill()
+        return
+
+    if check_win() != False:
+        print('Game over!')
+        window.reset()
+        window.bgcolor("darkslateblue")
+        t.goto(-150, 0)
+        draw_star(75, "purple")
+        t.goto(0, 0)
+        if check_win() == PieceType.WHITE:
+            t.color('#e9ce9b')
+            t.write('White wins!', font=font)
+        else:
+            t.color('#300c09')
+            t.write('Black wins!', font=font)
+    
     global selected
     global move
     y = math.floor(round(yraw-200)//-60)
@@ -356,15 +399,11 @@ def mouse_event(xraw, yraw):  # runs when a mouse event is detected
 
     try:
         board[selected[0]][selected[1]].selected = selected[2]
-        print(
-            f'coordinates: {x}, {y}, available squares: {available_squares(x, y)}, type: {board[y][x].type}')
     except:
         board[selected[0]][selected[1]] = Piece(
             selected[0], selected[1], PieceType.EMPTY)
 
 # function to check if a move is valid
-
-
 def check_move(x, y, x2, y2):
     # check if move is diagonal
     if abs(x - x2) != abs(y - y2):
@@ -451,7 +490,6 @@ def highlight_moves(xy, rm: bool):
         h.left(90)
         h.back(30)
         unhighlight.append([x, y])
-
 
 window.onscreenclick(mouse_event)
 
