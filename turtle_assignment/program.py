@@ -23,30 +23,19 @@ board = []  # board array
 selected = [0, 0, False]  # if a piece is selected or not
 
 t.penup()
-t.goto(-200, 250)
-font = ("monospace", 30, "normal")
+t.goto(-300, 250)
+font = ("Verdana", 30, "normal")
+t.color('navajowhite')
 t.write('Checkers Assignment', font=font)
 t.goto(0, 0)
-t.pd()
+t.pendown()
+t.color('black')
 
 # create a class for the pieces
-
-
 class PieceType(IntEnum):
     EMPTY = 0
     WHITE = 1
     BLACK = 2
-    # WHITE_KING = 3
-    # BLACK_KING = 4
-    # WHITE_SELECTED = 5
-    # BLACK_SELECTED = 6
-    # WHITE_KING_SELECTED = 7
-    # BLACK_KING_SELECTED = 8
-    WHITE_MOVE = 3  # 9
-    BLACK_MOVE = 4  # 10
-    # WHITE_KING_MOVE = 11
-    # BLACK_KING_MOVE = 12
-
 
 move = PieceType.BLACK
 
@@ -132,7 +121,7 @@ def create_piece(type: PieceType, king: bool = False):
     checker.back(30)
     checker.left(90)
     checker.back(10)
-    if king == True: # if king, animate crown
+    if king == True:  # if king, animate crown
         checker.forward(17.5)
         checker.right(90)
         checker.forward(30)
@@ -202,36 +191,9 @@ for y in range(8):
             t.back(60*y)
             t.left(90)
 
-# draw the coordinate of each square on the board
-# this is for debugging purposes
-for y in range(8):
-    for x in range(8):
-        t.forward(60*x)
-        t.right(90)
-        t.forward(60*y+30)
-        t.left(90)
-        t.forward(30)
-        t.color('deepskyblue')
-        t.write(str(x) + ", " + str(y), align="center",
-                font=("Arial", 18, "normal"))
-        t.color('black')
-        t.back(30)
-        t.back(60*x)
-        t.right(90)
-        t.back(60*y+30)
-        t.left(90)
-
 # make this checkers board playable
-# 0 = empty, 1 = white, 2 = black
-# 3 = white king, 4 = black king
-# 5 = white selected, 6 = black selected
-# 7 = white king selected, 8 = black king selected
-# 9 = white move, 10 = black move
-# 11 = white king move, 12 = black king move
 
-# create the animation for the checker piece to move
-
-
+# create the logic for the checker piece to move on the cognitive board
 def move_piece(x, y, x2, y2):
     global move
     if [x2, y2] not in available_squares(x, y):
@@ -262,8 +224,6 @@ def move_piece(x, y, x2, y2):
 
 
 # check which squares are available
-
-
 def available_squares(x, y):
     def try_except(x, y, tested_type=PieceType.EMPTY):
         if x < 0 or y < 0:
@@ -336,7 +296,7 @@ def available_squares(x, y):
                         available_squares.append([x-1, y-1])
                 if y > 6:  # you can't take a piece on the seventh rank
                     return available_squares
-                
+
                 try:
                     if board[y+1][x+1].type == PieceType.BLACK and board[y+2][x+2].type == PieceType.EMPTY:
                         available_squares = [[x+2, y+2]]
@@ -356,7 +316,7 @@ def available_squares(x, y):
                     pass
 
                 try:
-                    if board[y-1][x-1].type == PieceType.BLACK and board[y-2][x-2].type == PieceType.EMPTY and board[y][x].king == True: 
+                    if board[y-1][x-1].type == PieceType.BLACK and board[y-2][x-2].type == PieceType.EMPTY and board[y][x].king == True:
                         available_squares = [[x-2, y-2]]
                 except IndexError:
                     pass
@@ -365,17 +325,17 @@ def available_squares(x, y):
 
 
 # get clicked coordinates
-def mouse_event(xraw, yraw): # runs when a mouse event is detected
+def mouse_event(xraw, yraw):  # runs when a mouse event is detected
     global selected
     global move
     y = math.floor(round(yraw-200)//-60)
     x = math.floor(round(xraw+260)//60)
     if y > 7 or x > 7 or x < 0 or y < 0:
         return False  # print('out of bounds')
-    
+
     if board[y][x].type != move and selected[2] == False:
         return False
-    
+
     if selected[2] == True:
         # ensure that the correct player is moving
         highlight_moves(available_squares(x, y), True)
@@ -393,7 +353,7 @@ def mouse_event(xraw, yraw): # runs when a mouse event is detected
     # check if it is player's move
     if board[y][x].type != move:
         return False
-    
+
     try:
         board[selected[0]][selected[1]].selected = selected[2]
         print(
@@ -427,14 +387,9 @@ def check_move(x, y, x2, y2):
         return False
     return True
 
+
 # create the animation for the checker piece to move
-
-
 def animate_move(x, y, x2, y2):
-    king = 0
-    if board[y][x].king == True:
-        king = 60
-
     t.goto(x * 60 - 260, y * -60 + 200)
     create_square(False, True)
     t.goto(x2 * 60 - 260, y2 * -60 + 200)
@@ -448,6 +403,7 @@ def animate_move(x, y, x2, y2):
             create_square(False, True)  # remove the middle piece physically
             board[(y + y2) // 2][(x + x2) // 2] = Piece((x + x2) // 2, (y +
                                                                         y2) // 2, PieceType.EMPTY)  # remove the middle piece logically
+
 
 # highlight moves
 unhighlight = []
@@ -501,27 +457,3 @@ window.onscreenclick(mouse_event)
 
 t.goto(-200, 200)
 mainloop()
-
-
-# 0 [[0, 1, 0, 3, 0, 5, 0, 7],
-# 1 [0, 0, 2, 0, 4, 0, 6, 0],
-# 2 [0, 0, 0, 0, 0, 0, 0, 0],
-# 3 [0, 0, 0, 0, 0, 0, 0, 0],
-# 4 [0, 0, 0, 0, 0, 0, 0, 0],
-# 5 [0, 0, 0, 0, 0, 0, 0, 0],
-# 6 [0, 0, 0, 0, 0, 0, 0, 0],
-# 7 [0, 0, 0, 0, 0, 0, 0, 0]]
-
-
-# 0, 1 true
-# 0, 3 true
-# 0, 5 true
-# 0, 7 true
-# 1, 0 true
-# 1, 2 true
-# 1, 4 true
-# 1, 6 true
-# 2, 1 true
-# 2, 3 true
-# 2, 5 true
-# 2, 7 true
