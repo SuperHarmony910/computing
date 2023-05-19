@@ -23,7 +23,7 @@ board = []  # board array
 selected = [0, 0, False]  # if a piece is selected or not
 
 t.penup()
-t.goto(-200, 350)
+t.goto(-200, 250)
 font = ("monospace", 30, "normal")
 t.write('Checkers Assignment', font=font)
 t.goto(0, 0)
@@ -108,7 +108,7 @@ def create_square(endfill=0, replace=False):
     t.penup()
 
 
-def create_piece(type: PieceType):
+def create_piece(type: PieceType, king: bool = False):
     checker = t
     if type == PieceType.WHITE:
         t.color("#d2b26d", "#e9ce9b")
@@ -132,6 +132,20 @@ def create_piece(type: PieceType):
     checker.back(30)
     checker.left(90)
     checker.back(10)
+    if king == True: # if king, animate crown
+        checker.forward(17.5)
+        checker.right(90)
+        checker.forward(30)
+        # set colour to gold
+        checker.color("#ffd700", "#ffd700")
+        checker.begin_fill()
+        checker.pendown()
+        checker.circle(12.5)
+        checker.penup()
+        checker.back(30)
+        checker.left(90)
+        checker.end_fill()
+        checker.color('black')
 
 
 # loop to create board with squares of alternating colours
@@ -219,27 +233,32 @@ for y in range(8):
 
 
 def move_piece(x, y, x2, y2):
+    global move
     if [x2, y2] not in available_squares(x, y):
         return False
+
     # check if the move is valid
     if check_move(x, y, x2, y2):
+        if move == PieceType.BLACK:
+            move = PieceType.WHITE
+        else:
+            move = PieceType.BLACK
         # move the piece
-        print(f'took off: {x}, {y} - landed: {x2}, {y2}')
         board[y2][x2] = board[y][x]
         animate_move(x, y, x2, y2)
-        print(f'black piece moved to: {x2}, {y2}')
         # set previous piece to empty
         board[y][x] = Piece(x, y, PieceType.EMPTY)
-        # check if the piece is a king
+
+        # king the piece if it reaches the end of the board
         if board[y2][x2].type == PieceType.WHITE and y2 == 7:
             board[y2][x2].king = True
-            king_piece(x2, y2)
-        if board[y2][x2] == PieceType.BLACK and y2 == 0:
-            print('black king')
+            t.goto(x2 * 60 - 260, y2 * -60 + 200)
+            create_piece(board[y2][x2].type, True)
+
+        if board[y2][x2].type == PieceType.BLACK and y2 == 0:
             board[y2][x2].king = True
-            king_piece(x2, y2)
-        print('kinged?', board[y2][x2].king)
-        # check if move is jump. if move is not jump, default case will handle move
+            t.goto(x2 * 60 - 260, y2 * -60 + 200)
+            create_piece(board[y2][x2].type, True)
 
 
 # check which squares are available
@@ -267,6 +286,7 @@ def available_squares(x, y):
     # make sure coordinate is not out of bounds
     if x < 8 and y < 8:
         if x > -1 and y > -1:
+            # append all possibilities that a black piece can move to to the available_squares list
             if board[y][x].type == PieceType.BLACK:
                 if try_except(x+1, y-1):  # possibility one
                     available_squares.append([x+1, y-1])
@@ -274,16 +294,15 @@ def available_squares(x, y):
                     available_squares.append([x-1, y-1])
 
                 if board[y][x].king == True:  # if a king
-                    if try_except(x+1, y-1):  # possibility three as king
-                        available_squares.append([x+1, y-1])
+                    if try_except(x+1, y+1):  # possibility three as king
+                        available_squares.append([x+1, y+1])
                     if try_except(x-1, y+1):  # possibility four as king
                         available_squares.append([x-1, y+1])
 
                 try:
-                    if board[y+1][x+1].type == PieceType.WHITE and board[y+2][x+2].type == PieceType.EMPTY:
+                    if board[y+1][x+1].type == PieceType.WHITE and board[y+2][x+2].type == PieceType.EMPTY and board[y][x].king == True:
                         available_squares = [[x+2, y+2]]
                 except IndexError:
-                    print('index error')
                     pass
 
                 try:
@@ -293,7 +312,7 @@ def available_squares(x, y):
                     pass
 
                 try:
-                    if board[y+1][x-1].type == PieceType.WHITE and board[y+2][x-2].type == PieceType.EMPTY:
+                    if board[y+1][x-1].type == PieceType.WHITE and board[y+2][x-2].type == PieceType.EMPTY and board[y][x].king == True:
                         available_squares = [[x-2, y+2]]
                 except IndexError:
                     pass
@@ -304,6 +323,7 @@ def available_squares(x, y):
                 except IndexError:
                     pass
 
+            # append all possibilities that a white piece can move to to the available_squares list
             if board[y][x].type == PieceType.WHITE:
                 if try_except(x+1, y+1):
                     available_squares.append([x+1, y+1])
@@ -314,25 +334,29 @@ def available_squares(x, y):
                         available_squares.append([x+1, y-1])
                     if try_except(x-1, y-1):
                         available_squares.append([x-1, y-1])
-                if y > 6:  # you cant take a piece on the seventh rank
+                if y > 6:  # you can't take a piece on the seventh rank
                     return available_squares
+                
                 try:
-                    if board[y+1][x+1].type == PieceType.BLACK and try_except(x+2, y+2):
+                    if board[y+1][x+1].type == PieceType.BLACK and board[y+2][x+2].type == PieceType.EMPTY:
                         available_squares = [[x+2, y+2]]
                 except IndexError:
                     pass
+
                 try:
-                    if board[y-1][x+1].type == PieceType.BLACK and try_except(x+2, y-2):
+                    if board[y-1][x+1].type == PieceType.BLACK and board[y-2][x+2].type == PieceType.EMPTY and board[y][x].king == True:
                         available_squares = [[x+2, y-2]]
                 except IndexError:
                     pass
+
                 try:
-                    if board[y+1][x-1].type == PieceType.BLACK and try_except(x-2, y+2):
+                    if board[y+1][x-1].type == PieceType.BLACK and board[y+2][x-2].type == PieceType.EMPTY:
                         available_squares = [[x-2, y+2]]
                 except IndexError:
                     pass
+
                 try:
-                    if board[y-1][x-1].type == PieceType.BLACK and try_except(x-2, y-2):
+                    if board[y-1][x-1].type == PieceType.BLACK and board[y-2][x-2].type == PieceType.EMPTY and board[y][x].king == True: 
                         available_squares = [[x-2, y-2]]
                 except IndexError:
                     pass
@@ -341,17 +365,19 @@ def available_squares(x, y):
 
 
 # get clicked coordinates
-def mouse_event(xraw, yraw):  # returns x, y, is_move_to
+def mouse_event(xraw, yraw): # runs when a mouse event is detected
     global selected
     global move
     y = math.floor(round(yraw-200)//-60)
     x = math.floor(round(xraw+260)//60)
     if y > 7 or x > 7 or x < 0 or y < 0:
         return False  # print('out of bounds')
-
-    # check if piece was actually moved before changing move variable to signify which player's turn it is
-
+    
+    if board[y][x].type != move and selected[2] == False:
+        return False
+    
     if selected[2] == True:
+        # ensure that the correct player is moving
         highlight_moves(available_squares(x, y), True)
         move_piece(selected[0], selected[1], x, y)
         selected[0] = False
@@ -363,27 +389,18 @@ def mouse_event(xraw, yraw):  # returns x, y, is_move_to
         selected[0] = x
         selected[1] = y
         selected[2] = True
-    # return x, y, False
 
+    # check if it is player's move
+    if board[y][x].type != move:
+        return False
+    
     try:
         board[selected[0]][selected[1]].selected = selected[2]
-        print(f'coords: {x}, {y}, available squares: {available_squares(x, y)}, type: {board[y][x].type}')
+        print(
+            f'coordinates: {x}, {y}, available squares: {available_squares(x, y)}, type: {board[y][x].type}')
     except:
         board[selected[0]][selected[1]] = Piece(
             selected[0], selected[1], PieceType.EMPTY)
-
-    # write who's turn it is
-    if selected[2] == False:
-        if board[y][x].type == PieceType.BLACK:
-            move = PieceType.WHITE
-            writer.clear()
-            writer.goto(-100, 220)
-            writer.write('its whites turn', font=font)
-        elif board[y][x].type == PieceType.WHITE:
-            move = PieceType.BLACK
-            writer.clear()
-            writer.goto(-100, 220)
-            writer.write('its blacks turn', font="Arial, 30")
 
 # function to check if a move is valid
 
@@ -414,27 +431,23 @@ def check_move(x, y, x2, y2):
 
 
 def animate_move(x, y, x2, y2):
+    king = 0
+    if board[y][x].king == True:
+        king = 60
+
     t.goto(x * 60 - 260, y * -60 + 200)
     create_square(False, True)
     t.goto(x2 * 60 - 260, y2 * -60 + 200)
-    create_piece(board[y][x].type)
+    create_piece(board[y][x].type, board[y][x].king)
+
     # check if move is a jump
     if abs(x - x2) % 2 == 0:  # accounts for all jump magnitudes
         if board[(y + y2) // 2][(x + x2) // 2]:  # look for the piece in the middle
-
-            t.goto(((x + x2) // 2) * 60 - 260, ((y + y2) // 2) * -60 + 200)
-            create_square(False, True)
-
-
-def king_piece(x, y):
-    print('KINGED')
-    t.goto(x * 60 - 260, y * -60 + 200)
-    t.right(90)
-    t.fd(30)
-    # set colour to gold
-    t.color("#ffd700", "#ffd700")
-    t.circle(15)
-
+            t.goto(((x + x2) // 2) * 60 - 260, ((y + y2) // 2)
+                   * -60 + 200)  # go to the middle piece
+            create_square(False, True)  # remove the middle piece physically
+            board[(y + y2) // 2][(x + x2) // 2] = Piece((x + x2) // 2, (y +
+                                                                        y2) // 2, PieceType.EMPTY)  # remove the middle piece logically
 
 # highlight moves
 unhighlight = []
@@ -487,7 +500,6 @@ def highlight_moves(xy, rm: bool):
 window.onscreenclick(mouse_event)
 
 t.goto(-200, 200)
-t.stamp()
 mainloop()
 
 

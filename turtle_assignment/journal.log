@@ -1,9 +1,16 @@
+Microsoft Word did not allow me to upload the .docx file due to file limit capacity in my OneDrive, 
+so I have uploaded it as a native journal.log file instead. Apologies for the inconvenience, for
+understandable reasons I haven't been able to create a table for the errors and have just listed them. 
+Please don't mark me down, thanks :)
+
+
+
 Objective: created a chequered board to play checkers on.
 Criteria for success: the game must be playable, and the rules of checkers must be followed.
 
 -	A function was made to facilitate the creation of squares.
 
--	A global variable, `c`, was created for the colour alteration between the squares uniform with the
+-	A global variable, "c", was created for the colour alteration between the squares uniform with the
 	aforementioned function.
 	
 -	A while loop was used to create the checker board. 
@@ -18,25 +25,26 @@ Criteria for success: the game must be playable, and the rules of checkers must 
 		attempting to determine a correlation between every pair of coordinates that contained a checker piece.
 		General ability skills come in handy sometimes :)
 
--	Now, onto the logic. I created five core functions: `available_squares()`, `check_move()`, `move_piece()`,
-	`animate_move()`, and `mouse_event()`
+-	Now, onto the logic. I created five core functions: "available_squares()", "check_move()", "move_piece()",
+	"animate_move()", and "mouse_event()"
 		available_squares(): This function used preprogrammed mathematical facts which dictate the motion of the
-		respective colour's checker piece. This was used hand-in-hand with the function `highlight_move()` to
+		respective colour's checker piece. This was used hand-in-hand with the function "highlight_move()" to
 		create blue circles upon squares which denote that it is a possible square to travel to.
 
 		check_move(): This function is merely to check if a move is valid and legal.
 
-		move_piece(): This function handles the technical moving of the piece upon the 'board' array, then calls the `animate_move()`
+		move_piece(): This function handles the technical moving of the piece upon the 'board' array, then calls the "animate_move()"
 		function to animate the move.
 
 		animate_move(): This function facilitates the animation of the move to its destination square after moving or taking a piece.
 
 		mouse_event(): This function handles and filters all mouse events to ensure that the game is played properly.
 
+
 - Errors encountered:
-	- I encountered a problem with the `move_piece()` function, where the piece would not move to the correct square.
-		I solved this by using the `animate_move()` function to move the piece to the correct square, then using the
-		`move_piece()` function to set that value into the array, rather than animating and adding to the array in one function.
+	- I encountered a problem with the "move_piece()" function, where the piece would not move to the correct square.
+		I solved this by using the "animate_move()" function to move the piece to the correct square, then using the
+		"move_piece()" function to set that value into the array, rather than animating and adding to the array in one function.
 
 	- I encountered an "IndexError" when I attempted to search for values in the 'board' array arbitrarily, which were out of range.
 		I solved this by using a try-except statement to catch the error and ignore it.
@@ -45,10 +53,35 @@ Criteria for success: the game must be playable, and the rules of checkers must 
 		was that the variable was an integer, and I was attempting to access it as a custom type. I solved this by using a try-except
 		statement by making all the types into enums.
 	
-	- I encountered a problem with the `animate_move()` function, where the square would not be filled in at the correct position, as
+	- I encountered a problem with the "animate_move()" function, where the square would not be filled in at the correct position, as
 		it was the array's coordinates that the Turtle object attempted to go to, rather than the raw coordinates of pixels.
+
+	- There was a logical error where the Turtle was configured in a function to apply a gold circle to kings, however it didn't return
+		itself to the original position, therefore creating all regular movement to be in different squares. I solved this by adding the
+		antithesis to the incriminating code (which was "left(90)").
+
+	- I encountered a problem with the "mouse_event()" function, where the program would not recognise the mouse click. I solved this
+		by using the "onscreenclick()" function derived from the Window object instead of the Turtle object to detect the mouse click, 
+		and then using the "pos()" function to determine the coordinates of the mouse click, and then using the "mouse_event()" function
+		to handle the event.
+
+	- I encountered a problem with the "move" variable, where it was not allowing the move even though it was the player's move legally.
+		After closer analysis, I discovered it was because it thought that the piece on the destination square was trying to move, which
+		was naturally empty. This was remedied by ensuring the third element in the "selected" list was deemed "False", ensuring that it
+		is not the destination square that is picked, rather a square with a piece on it.
+		
+	- I encountered an "IndexError" when I tried to access the array within an array to get the piece and its attributes due to arbitrary
+		indexes due to the varying properties of the pieces. This was This was remedied by employing the use of a class, named "Piece", which
+		stores the piece's attributes in a class, and then appending the class to the array, rather than the attributes themselves.
 		 
 	
+- Feedback from teacher:
+	Sir suggested that I add a few more comments to my code, which I have done; and remove the coordinate numbering on each of the
+	shapes (purely for debugging purposes), which I have also done.
 	
+- Evaluation:
+	The program works almost as intended, and the rules of checkers are usually followed. However, a piece cannot take two or three times in a row
+	as is legal in regular checkers, as with the limited timeframe I was unable to achieve this. However, I believe I have created a very aesthetically
+	pleasing and playable game of checkers.
 
 
