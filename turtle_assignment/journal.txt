@@ -1,5 +1,5 @@
 Microsoft Word did not allow me to upload the .docx file due to file limit capacity in my OneDrive, 
-so I have uploaded it as a native journal.log file instead. Apologies for the inconvenience, for
+so I have uploaded it as a native journal.txt file instead. Apologies for the inconvenience, for
 understandable reasons I haven't been able to create a table for the errors and have just listed them. 
 Please don't mark me down, thanks :)
 
@@ -7,6 +7,8 @@ Please don't mark me down, thanks :)
 
 Objective: created a chequered board to play checkers on.
 Criteria for success: the game must be playable, and the rules of checkers must be followed.
+Motivation: I have always wanted to create a board game in a programming language - this is
+	a chance for me to display my coding prowess to my teachers. Hope you like it.
 
 -	A function was made to facilitate the creation of squares.
 
@@ -73,6 +75,15 @@ Criteria for success: the game must be playable, and the rules of checkers must 
 	- I encountered an "IndexError" when I tried to access the array within an array to get the piece and its attributes due to arbitrary
 		indexes due to the varying properties of the pieces. This was This was remedied by employing the use of a class, named "Piece", which
 		stores the piece's attributes in a class, and then appending the class to the array, rather than the attributes themselves.
+
+	- I encountered a "SyntaxError" when I tried to add a function to the "Piece" class to create a default empty case. I remedied this by
+		just creating a default empty case initialising the "Piece" class instead of creating a function within the class to do so.
+
+	- I encountered a "NameError" when I tried to use the "Piece" class, as I had not defined the class properly. This was remedied by
+		adding a "selected" state to the class, which is used to determine whether the piece is selected or not.
+		
+	- I encountered an "AttributeError" when I tried to access the "king" attribute of the "Piece" class. This was remedied by
+		ensuring that said attribute may only be of type "PieceType", which is used to determine whether the piece is selected or not.
 		 
 	
 - Feedback from teacher:
@@ -81,7 +92,7 @@ Criteria for success: the game must be playable, and the rules of checkers must 
 	
 - Evaluation:
 	The program works almost as intended, and the rules of checkers are usually followed. However, a piece cannot take two or three times in a row
-	as is legal in regular checkers, as with the limited timeframe I was unable to achieve this. However, I believe I have created a very aesthetically
-	pleasing and playable game of checkers.
+	as is legal in regular checkers; you have no choice of what piece you want to take if provided with more than one, it only allows a single choice
+	as with the limited timeframe I was unable to achieve this. However, I believe I have created a very aesthetically pleasing and playable game of checkers.
 
 
